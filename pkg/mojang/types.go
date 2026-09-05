@@ -3,7 +3,7 @@ package mojang
 import (
 	"net/http"
 
-	"github.com/chickeniq/hypixel-go/pkg/cache"
+	"github.com/guild-link/hypixel-go/pkg/cache"
 )
 
 type Client struct {

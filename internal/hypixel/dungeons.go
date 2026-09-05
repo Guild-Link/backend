@@ -3,8 +3,8 @@ package hypixel
 import (
 	"context"
 
-	"github.com/chickeniq/hypixel-go/pkg/hypixel"
-	pb "github.com/chickeniq/hypixel-go/proto/hypixel"
+	"github.com/guild-link/hypixel-go/pkg/hypixel"
+	pb "github.com/guild-link/hypixel-go/proto/hypixel"
 )
 
 func (s *Server) GetDungeonsStats(ctx context.Context, req *pb.SkyBlockRequest) (*pb.DungeonsStatsResponse, error) {

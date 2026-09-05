@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/chickeniq/hypixel-go/pkg/math"
+	"github.com/guild-link/hypixel-go/pkg/math"
 )
 
 func (c *Client) GetDungeonsStats(ctx context.Context, uuid, profileName string) (*DungeonsStats, error) {

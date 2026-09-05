@@ -1,9 +1,9 @@
 package hypixel
 
 import (
-	"github.com/chickeniq/hypixel-go/pkg/cache"
-	"github.com/chickeniq/hypixel-go/pkg/hypixel"
-	pb "github.com/chickeniq/hypixel-go/proto/hypixel"
+	"github.com/guild-link/hypixel-go/pkg/cache"
+	"github.com/guild-link/hypixel-go/pkg/hypixel"
+	pb "github.com/guild-link/hypixel-go/proto/hypixel"
 	"google.golang.org/grpc"
 )
 

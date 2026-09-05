@@ -1,4 +1,4 @@
-module github.com/chickeniq/hypixel-go
+module github.com/guild-link/hypixel-go
 
 go 1.26.4
 

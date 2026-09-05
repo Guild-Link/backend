@@ -1,4 +1,4 @@
-module github.com/guild-link/hypixel-go
+module github.com/guild-link/backend
 
 go 1.26.4
 

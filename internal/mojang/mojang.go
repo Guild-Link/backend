@@ -3,9 +3,9 @@ package mojang
 import (
 	"context"
 
-	"github.com/guild-link/hypixel-go/pkg/cache"
-	"github.com/guild-link/hypixel-go/pkg/mojang"
-	pb "github.com/guild-link/hypixel-go/proto/mojang"
+	"github.com/guild-link/backend/pkg/cache"
+	"github.com/guild-link/backend/pkg/mojang"
+	pb "github.com/guild-link/backend/proto/mojang"
 	"google.golang.org/grpc"
 )
 

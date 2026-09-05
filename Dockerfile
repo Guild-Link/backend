@@ -7,15 +7,15 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/hypixel-go ./cmd/
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/backend ./cmd/
 RUN mkdir -p /out/data
 
 FROM scratch
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=build /out/hypixel-go /hypixel-go
+COPY --from=build /out/backend /backend
 
 USER 65532:65532
 WORKDIR /data
 
-ENTRYPOINT ["/hypixel-go"]
+ENTRYPOINT ["/backend"]

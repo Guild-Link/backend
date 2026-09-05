@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/guild-link/hypixel-go/pkg/cache"
+	"github.com/guild-link/backend/pkg/cache"
 )
 
 func NewClient(cache *cache.Cache) *Client {

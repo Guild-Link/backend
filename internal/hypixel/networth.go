@@ -3,7 +3,7 @@ package hypixel
 import (
 	"context"
 
-	pb "github.com/guild-link/hypixel-go/proto/hypixel"
+	pb "github.com/guild-link/backend/proto/hypixel"
 )
 
 func (s *Server) GetNetworth(ctx context.Context, req *pb.SkyBlockRequest) (*pb.NetworthResponse, error) {

@@ -8,40 +8,50 @@ var catacombsXPTable = [...]float64{
 	15000000, 19000000, 24000000, 30000000, 38000000, 48000000, 60000000, 75000000, 93000000, 116250000,
 }
 
-type DungeonClasses struct {
-	Healer  float64
-	Mage    float64
-	Tank    float64
-	Berserk float64
-	Archer  float64
+type DungeonClass uint8
+
+type DungeonClassLevel struct {
+	Class DungeonClass
+	Level float64
 }
+
+const (
+	DungeonClassBerserk DungeonClass = iota
+	DungeonClassHealer
+	DungeonClassArcher
+	DungeonClassMage
+	DungeonClassTank
+)
+
+var dungeonClassNames = [...]string{
+	"berserk",
+	"healer",
+	"archer",
+	"mage",
+	"tank",
+}
+
+type DungeonMode uint8
+
+const (
+	DungeonModeCatacombs DungeonMode = iota
+	DungeonModeMasterCatacombs
+)
 
 type DungeonFloorStats struct {
+	Mode         DungeonMode
+	Floor        uint32
 	Completions  float64
-	PersonalBest float64
+	PersonalBest *float64
 }
 
-type DungeonsStats struct {
+type DungeonStats struct {
 	Profile            *SkyBlockProfile
 	ClassAverage       float64
 	CatacombsLevel     float64
-	SelectedClass      string
 	SelectedClassLevel float64
 	SecretsFound       float64
-	ClassLevel         DungeonClasses
-	F0                 DungeonFloorStats
-	F1                 DungeonFloorStats
-	F2                 DungeonFloorStats
-	F3                 DungeonFloorStats
-	F4                 DungeonFloorStats
-	F5                 DungeonFloorStats
-	F6                 DungeonFloorStats
-	F7                 DungeonFloorStats
-	M1                 DungeonFloorStats
-	M2                 DungeonFloorStats
-	M3                 DungeonFloorStats
-	M4                 DungeonFloorStats
-	M5                 DungeonFloorStats
-	M6                 DungeonFloorStats
-	M7                 DungeonFloorStats
+	SelectedClass      *DungeonClass
+	Classes            []DungeonClassLevel
+	Floors             []DungeonFloorStats
 }

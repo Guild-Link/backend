@@ -2,6 +2,7 @@ package hypixel
 
 import (
 	"context"
+	"fmt"
 )
 
 type Networth struct {
@@ -11,17 +12,26 @@ type Networth struct {
 }
 
 func (c *Client) GetNetworth(ctx context.Context, username, profileName string) (*Networth, error) {
-	profile, err := c.GetSkyBlockProfile(ctx, username, profileName)
+	player, rawProfile, err := c.GetRawProfile(ctx, username, profileName)
 	if err != nil {
 		return nil, err
 	}
 
-	museum, err := c.GetMuseumRaw(ctx, profile.ID)
+	profile, err := parseRawProfile(player, rawProfile)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := c.compat.Networth(ctx, profile.Raw, museum, profile.Player.ID)
+	if profile.Data == nil {
+		return nil, fmt.Errorf("member %s not found in profile %s", player.ID, profile.Name)
+	}
+
+	museum, err := c.getRawMuseum(ctx, profile.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := c.compat.Networth(ctx, rawProfile, museum, profile.Mojang.ID)
 	if err != nil {
 		return nil, err
 	}

@@ -11,26 +11,13 @@ import (
 	"github.com/guild-link/backend/pkg/mojang"
 )
 
-type SkyBlockProfile struct {
-	ID       string
-	Name     string
-	GameMode string
-	Selected bool
-	Player   *mojang.Profile
-	Raw      json.RawMessage
-
-	Data              *sc.Member
-	Banking           *sc.Banking
-	CommunityUpgrades *sc.CommunityUpgrades
-}
-
-func (c *Client) GetProfilesRaw(ctx context.Context, username string) (*mojang.Profile, []json.RawMessage, error) {
+func (c *Client) GetRawProfiles(ctx context.Context, username string) (*mojang.Profile, []json.RawMessage, error) {
 	profile, err := c.mojang.GetProfile(ctx, username)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	body, err := c.get(ctx, "/skyblock/profiles"+"?uuid="+url.QueryEscape(profile.ID))
+	body, err := c.get(ctx, "/skyblock/profiles?uuid="+url.QueryEscape(profile.ID))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -46,75 +33,87 @@ func (c *Client) GetProfilesRaw(ctx context.Context, username string) (*mojang.P
 	return profile, data.Profiles, nil
 }
 
-func (c *Client) GetSkyBlockProfiles(ctx context.Context, username string) ([]SkyBlockProfile, error) {
-	player, rawProfiles, err := c.GetProfilesRaw(ctx, username)
+func (c *Client) GetRawProfile(ctx context.Context, username, profileName string) (*mojang.Profile, json.RawMessage, error) {
+	player, rawProfiles, err := c.GetRawProfiles(ctx, username)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, rawProfile := range rawProfiles {
+		var profile struct {
+			Name     string `json:"cute_name"`
+			Selected bool   `json:"selected"`
+		}
+		if err := json.Unmarshal(rawProfile, &profile); err != nil {
+			return nil, nil, fmt.Errorf("decode Hypixel profile: %w", err)
+		}
+
+		if (profileName == "" && profile.Selected) || strings.EqualFold(profile.Name, profileName) {
+			return player, rawProfile, nil
+		}
+	}
+
+	if profileName == "" {
+		return nil, nil, fmt.Errorf("selected profile not found")
+	}
+
+	return nil, nil, fmt.Errorf("profile %s not found", profileName)
+}
+
+func parseRawProfile(player *mojang.Profile, rawProfile json.RawMessage) (*SkyBlockProfile, error) {
+	var data sc.Profile
+	if err := json.Unmarshal(rawProfile, &data); err != nil {
+		return nil, fmt.Errorf("decode Hypixel profile: %w", err)
+	}
+
+	var memberData *sc.Member
+	if member, ok := data.Members[player.ID]; ok {
+		memberData = &member
+	}
+
+	return &SkyBlockProfile{
+		ID:                data.ProfileID,
+		Name:              data.CuteName,
+		Mojang:            player,
+		GameMode:          data.GameMode,
+		Selected:          data.Selected,
+		Data:              memberData,
+		Banking:           data.Banking,
+		CommunityUpgrades: data.CommunityUpgrades,
+	}, nil
+}
+
+func (c *Client) GetProfiles(ctx context.Context, username string) ([]SkyBlockProfile, error) {
+	player, rawProfiles, err := c.GetRawProfiles(ctx, username)
 	if err != nil {
 		return nil, err
 	}
 
-	data := make([]sc.Profile, len(rawProfiles))
-	for i := range rawProfiles {
-		if err := json.Unmarshal(rawProfiles[i], &data[i]); err != nil {
-			return nil, fmt.Errorf("decode Hypixel profile: %w", err)
+	profiles := make([]SkyBlockProfile, 0, len(rawProfiles))
+	for _, rawProfile := range rawProfiles {
+		profile, err := parseRawProfile(player, rawProfile)
+		if err != nil {
+			return nil, err
 		}
-	}
-
-	profiles := make([]SkyBlockProfile, 0, len(data))
-	for i := range data {
-		var memberData *sc.Member
-		p := &data[i]
-
-		member, ok := p.Members[player.ID]
-		if ok {
-			memberData = &member
-		}
-
-		profiles = append(profiles, SkyBlockProfile{
-			ID:                p.ProfileID,
-			Name:              p.CuteName,
-			Player:            player,
-			Raw:               rawProfiles[i],
-			GameMode:          p.GameMode,
-			Selected:          p.Selected,
-			Data:              memberData,
-			Banking:           p.Banking,
-			CommunityUpgrades: p.CommunityUpgrades,
-		})
+		profiles = append(profiles, *profile)
 	}
 
 	return profiles, nil
 }
 
-func (c *Client) GetSkyBlockProfile(ctx context.Context, username, profileName string) (*SkyBlockProfile, error) {
-	profiles, err := c.GetSkyBlockProfiles(ctx, username)
+func (c *Client) GetProfile(ctx context.Context, username, profileName string) (*SkyBlockProfile, error) {
+	player, rawProfile, err := c.GetRawProfile(ctx, username, profileName)
 	if err != nil {
 		return nil, err
 	}
 
-	if profileName == "" {
-		for _, profile := range profiles {
-			if !profile.Selected {
-				continue
-			}
-
-			if profile.Data == nil {
-				return nil, fmt.Errorf("member %s not found in selected profile", profile.Player.ID)
-			}
-
-			return &profile, nil
-		}
-
-		return nil, fmt.Errorf("selected profile not found")
+	profile, err := parseRawProfile(player, rawProfile)
+	if err != nil {
+		return nil, err
+	}
+	if profile.Data == nil {
+		return nil, fmt.Errorf("member %s not found in profile %s", player.ID, profile.Name)
 	}
 
-	for _, profile := range profiles {
-		if strings.EqualFold(profile.Name, profileName) {
-			if profile.Data == nil {
-				return nil, fmt.Errorf("member %s not found in profile %s", profile.Player.ID, profileName)
-			}
-			return &profile, nil
-		}
-	}
-
-	return nil, fmt.Errorf("profile %s not found", profileName)
+	return profile, nil
 }

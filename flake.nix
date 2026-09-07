@@ -31,19 +31,13 @@
               shopt -s globstar nullglob
 
               files=(proto/**/*.proto)
-              module="$(go list -m)"
 
               for file in "''${files[@]}"; do
-                relative="''${file#proto/}"
-                package="$module/$(dirname "$file")"
-
                 protoc -I proto \
                   --go_out=proto \
-                  --go_opt=paths=source_relative \
-                  --go_opt="M$relative=$package" \
                   --go-grpc_out=proto \
+                  --go_opt=paths=source_relative \
                   --go-grpc_opt=paths=source_relative \
-                  --go-grpc_opt="M$relative=$package" \
                   "$file"
               done
             '';

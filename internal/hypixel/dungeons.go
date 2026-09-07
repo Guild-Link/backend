@@ -3,52 +3,46 @@ package hypixel
 import (
 	"context"
 
-	"github.com/guild-link/backend/pkg/hypixel"
 	pb "github.com/guild-link/backend/proto/hypixel"
 )
 
-func (s *Server) GetDungeonsStats(ctx context.Context, req *pb.SkyBlockRequest) (*pb.DungeonsStatsResponse, error) {
-	d, err := s.hypixel.GetDungeonsStats(ctx, req.GetUsername(), req.GetProfile())
+func (s *Server) GetDungeons(ctx context.Context, req *pb.SkyBlockRequest) (*pb.DungeonsResponse, error) {
+	d, err := s.hypixel.GetDungeons(ctx, req.GetUsername(), req.GetProfile())
 	if err != nil {
 		return nil, err
 	}
 
-	classLvl := d.ClassLevel
-	floor := func(stats hypixel.DungeonFloorStats) *pb.DungeonFloorStats {
-		return &pb.DungeonFloorStats{
-			Completions:  stats.Completions,
-			PersonalBest: stats.PersonalBest,
+	classes := make([]*pb.DungeonClassLevel, len(d.Classes))
+	for i, class := range d.Classes {
+		classes[i] = &pb.DungeonClassLevel{
+			DungeonClass: pb.DungeonClass(class.Class),
+			Level:        class.Level,
 		}
 	}
 
-	return &pb.DungeonsStatsResponse{
+	floors := make([]*pb.DungeonFloorStats, len(d.Floors))
+	for i, floor := range d.Floors {
+		floors[i] = &pb.DungeonFloorStats{
+			Mode:         pb.DungeonMode(floor.Mode),
+			Floor:        floor.Floor,
+			Completions:  floor.Completions,
+			PersonalBest: floor.PersonalBest,
+		}
+	}
+
+	response := &pb.DungeonsResponse{
 		Profile:            profile(d.Profile),
 		SelectedClassLevel: d.SelectedClassLevel,
 		CatacombsLevel:     d.CatacombsLevel,
-		SelectedClass:      d.SelectedClass,
 		ClassAverage:       d.ClassAverage,
 		SecretsFound:       d.SecretsFound,
-		ClassLevel: &pb.DungeonClasses{
-			Healer:  classLvl.Healer,
-			Mage:    classLvl.Mage,
-			Tank:    classLvl.Tank,
-			Berserk: classLvl.Berserk,
-			Archer:  classLvl.Archer,
-		},
-		Entrance: floor(d.F0),
-		F1:       floor(d.F1),
-		F2:       floor(d.F2),
-		F3:       floor(d.F3),
-		F4:       floor(d.F4),
-		F5:       floor(d.F5),
-		F6:       floor(d.F6),
-		F7:       floor(d.F7),
-		M1:       floor(d.M1),
-		M2:       floor(d.M2),
-		M3:       floor(d.M3),
-		M4:       floor(d.M4),
-		M5:       floor(d.M5),
-		M6:       floor(d.M6),
-		M7:       floor(d.M7),
-	}, nil
+		Classes:            classes,
+		Floors:             floors,
+	}
+	if d.SelectedClass != nil {
+		selectedClass := pb.DungeonClass(*d.SelectedClass)
+		response.SelectedClass = &selectedClass
+	}
+
+	return response, nil
 }

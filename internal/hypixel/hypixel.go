@@ -14,9 +14,11 @@ type Server struct {
 
 func profile(profile *hypixel.SkyBlockProfile) *pb.SkyBlockProfile {
 	return &pb.SkyBlockProfile{
-		Username: profile.Player.Name,
-		Uuid:     profile.Player.ID,
-		Profile:  profile.Name,
+		Profile: profile.Name,
+		Mojang: &pb.MojangProfile{
+			Username: profile.Mojang.Name,
+			Uuid:     profile.Mojang.ID,
+		},
 	}
 }
 

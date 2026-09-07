@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Hypixel_GetNetworth_FullMethodName      = "/Hypixel/GetNetworth"
-	Hypixel_GetDungeonsStats_FullMethodName = "/Hypixel/GetDungeonsStats"
+	Hypixel_GetNetworth_FullMethodName = "/Hypixel/GetNetworth"
+	Hypixel_GetDungeons_FullMethodName = "/Hypixel/GetDungeons"
+	Hypixel_GetFarming_FullMethodName  = "/Hypixel/GetFarming"
 )
 
 // HypixelClient is the client API for Hypixel service.
@@ -28,7 +29,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HypixelClient interface {
 	GetNetworth(ctx context.Context, in *SkyBlockRequest, opts ...grpc.CallOption) (*NetworthResponse, error)
-	GetDungeonsStats(ctx context.Context, in *SkyBlockRequest, opts ...grpc.CallOption) (*DungeonsStatsResponse, error)
+	GetDungeons(ctx context.Context, in *SkyBlockRequest, opts ...grpc.CallOption) (*DungeonsResponse, error)
+	GetFarming(ctx context.Context, in *SkyBlockRequest, opts ...grpc.CallOption) (*FarmingResponse, error)
 }
 
 type hypixelClient struct {
@@ -49,10 +51,20 @@ func (c *hypixelClient) GetNetworth(ctx context.Context, in *SkyBlockRequest, op
 	return out, nil
 }
 
-func (c *hypixelClient) GetDungeonsStats(ctx context.Context, in *SkyBlockRequest, opts ...grpc.CallOption) (*DungeonsStatsResponse, error) {
+func (c *hypixelClient) GetDungeons(ctx context.Context, in *SkyBlockRequest, opts ...grpc.CallOption) (*DungeonsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DungeonsStatsResponse)
-	err := c.cc.Invoke(ctx, Hypixel_GetDungeonsStats_FullMethodName, in, out, cOpts...)
+	out := new(DungeonsResponse)
+	err := c.cc.Invoke(ctx, Hypixel_GetDungeons_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hypixelClient) GetFarming(ctx context.Context, in *SkyBlockRequest, opts ...grpc.CallOption) (*FarmingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FarmingResponse)
+	err := c.cc.Invoke(ctx, Hypixel_GetFarming_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +76,8 @@ func (c *hypixelClient) GetDungeonsStats(ctx context.Context, in *SkyBlockReques
 // for forward compatibility.
 type HypixelServer interface {
 	GetNetworth(context.Context, *SkyBlockRequest) (*NetworthResponse, error)
-	GetDungeonsStats(context.Context, *SkyBlockRequest) (*DungeonsStatsResponse, error)
+	GetDungeons(context.Context, *SkyBlockRequest) (*DungeonsResponse, error)
+	GetFarming(context.Context, *SkyBlockRequest) (*FarmingResponse, error)
 	mustEmbedUnimplementedHypixelServer()
 }
 
@@ -78,8 +91,11 @@ type UnimplementedHypixelServer struct{}
 func (UnimplementedHypixelServer) GetNetworth(context.Context, *SkyBlockRequest) (*NetworthResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetNetworth not implemented")
 }
-func (UnimplementedHypixelServer) GetDungeonsStats(context.Context, *SkyBlockRequest) (*DungeonsStatsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetDungeonsStats not implemented")
+func (UnimplementedHypixelServer) GetDungeons(context.Context, *SkyBlockRequest) (*DungeonsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetDungeons not implemented")
+}
+func (UnimplementedHypixelServer) GetFarming(context.Context, *SkyBlockRequest) (*FarmingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetFarming not implemented")
 }
 func (UnimplementedHypixelServer) mustEmbedUnimplementedHypixelServer() {}
 func (UnimplementedHypixelServer) testEmbeddedByValue()                 {}
@@ -120,20 +136,38 @@ func _Hypixel_GetNetworth_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Hypixel_GetDungeonsStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Hypixel_GetDungeons_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SkyBlockRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HypixelServer).GetDungeonsStats(ctx, in)
+		return srv.(HypixelServer).GetDungeons(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Hypixel_GetDungeonsStats_FullMethodName,
+		FullMethod: Hypixel_GetDungeons_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HypixelServer).GetDungeonsStats(ctx, req.(*SkyBlockRequest))
+		return srv.(HypixelServer).GetDungeons(ctx, req.(*SkyBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hypixel_GetFarming_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SkyBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HypixelServer).GetFarming(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Hypixel_GetFarming_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HypixelServer).GetFarming(ctx, req.(*SkyBlockRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -150,8 +184,12 @@ var Hypixel_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Hypixel_GetNetworth_Handler,
 		},
 		{
-			MethodName: "GetDungeonsStats",
-			Handler:    _Hypixel_GetDungeonsStats_Handler,
+			MethodName: "GetDungeons",
+			Handler:    _Hypixel_GetDungeons_Handler,
+		},
+		{
+			MethodName: "GetFarming",
+			Handler:    _Hypixel_GetFarming_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

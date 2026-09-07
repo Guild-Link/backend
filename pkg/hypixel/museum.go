@@ -10,7 +10,7 @@ import (
 )
 
 func (c *Client) GetMuseum(ctx context.Context, profileID, memberID string) (*sc.Museum, error) {
-	body, err := c.GetMuseumRaw(ctx, profileID)
+	body, err := c.getRawMuseum(ctx, profileID)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (c *Client) GetMuseum(ctx context.Context, profileID, memberID string) (*sc
 	return &museum, nil
 }
 
-func (c *Client) GetMuseumRaw(ctx context.Context, profileID string) (json.RawMessage, error) {
+func (c *Client) getRawMuseum(ctx context.Context, profileID string) (json.RawMessage, error) {
 	body, err := c.get(ctx, "/skyblock/museum?profile="+url.QueryEscape(profileID))
 	if err != nil {
 		return nil, err

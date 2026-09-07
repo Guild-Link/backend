@@ -1,8 +1,21 @@
 syntax = "proto3";
 
+option go_package = "github.com/guild-link/backend/proto/hypixel";
+
 service Hypixel {
   rpc GetNetworth(SkyBlockRequest) returns (NetworthResponse);
-  rpc GetDungeonsStats(SkyBlockRequest) returns (DungeonsStatsResponse);
+  rpc GetDungeons(SkyBlockRequest) returns (DungeonsResponse);
+  rpc GetFarming(SkyBlockRequest) returns (FarmingResponse);
+}
+
+message MojangProfile {
+  string username = 1;
+  string uuid = 2;
+}
+
+message SkyBlockProfile {
+  MojangProfile mojang = 1;
+  string profile = 2;
 }
 
 message SkyBlockRequest {
@@ -10,11 +23,7 @@ message SkyBlockRequest {
   string profile = 2;
 }
 
-message SkyBlockProfile {
-  string username = 1;
-  string uuid = 2;
-  string profile = 3;
-}
+
 
 message NetworthResponse {
   double total = 1;
@@ -22,40 +31,48 @@ message NetworthResponse {
   SkyBlockProfile profile = 3;
 }
 
-message DungeonClasses {
-  double healer = 1;
-  double mage = 2;
-  double tank = 3;
-  double berserk = 4;
-  double archer = 5;
+message FarmingResponse {
+  double farming_level = 1;
+  double garden_level = 2;
+  double farming_xp = 3;
+  double garden_xp = 4;
+  double weight = 5;
+}
+
+
+
+enum DungeonClass {
+  DUNGEON_CLASS_BERSERK = 0;
+  DUNGEON_CLASS_HEALER = 1;
+  DUNGEON_CLASS_ARCHER = 2;
+  DUNGEON_CLASS_MAGE = 3;
+  DUNGEON_CLASS_TANK = 4;
+}
+
+enum DungeonMode {
+  DUNGEON_MODE_CATACOMBS = 0;
+  DUNGEON_MODE_MASTER_CATACOMBS = 1;
+}
+
+message DungeonClassLevel {
+  DungeonClass dungeon_class = 1;
+  double level = 2;
 }
 
 message DungeonFloorStats {
-  double completions = 1;
-  double personalBest = 2;
+  DungeonMode mode = 1;
+  uint32 floor = 2;
+  double completions = 3;
+  optional double personal_best = 4;
 }
 
-message DungeonsStatsResponse {
-  double classAverage = 1;
-  double catacombsLevel = 2;
-  string selectedClass = 3;
-  double selectedClassLevel = 4;
-  double secretsFound = 5;
-  DungeonClasses classLevel = 6;
-  DungeonFloorStats m7 = 7;
-  DungeonFloorStats entrance = 8;
-  DungeonFloorStats f1 = 9;
-  DungeonFloorStats f2 = 10;
-  DungeonFloorStats f3 = 11;
-  DungeonFloorStats f4 = 12;
-  DungeonFloorStats f5 = 13;
-  DungeonFloorStats f6 = 14;
-  DungeonFloorStats f7 = 15;
-  DungeonFloorStats m1 = 16;
-  DungeonFloorStats m2 = 17;
-  DungeonFloorStats m3 = 18;
-  DungeonFloorStats m4 = 19;
-  DungeonFloorStats m5 = 20;
-  DungeonFloorStats m6 = 21;
-  SkyBlockProfile profile = 22;
+message DungeonsResponse {
+  SkyBlockProfile profile = 1;
+  double class_average = 2;
+  double catacombs_level = 3;
+  optional DungeonClass selected_class = 4;
+  double selected_class_level = 5;
+  double secrets_found = 6;
+  repeated DungeonClassLevel classes = 7;
+  repeated DungeonFloorStats floors = 8;
 }

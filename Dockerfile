@@ -8,7 +8,6 @@ RUN go mod download
 
 COPY . .
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/backend ./cmd/
-RUN mkdir -p /out/data
 
 FROM scratch
 
@@ -16,6 +15,5 @@ COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifica
 COPY --from=build /out/backend /backend
 
 USER 65532:65532
-WORKDIR /data
 
 ENTRYPOINT ["/backend"]

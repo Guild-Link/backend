@@ -13,15 +13,6 @@ import (
 	"github.com/guild-link/backend/pkg/mojang"
 )
 
-type Client struct {
-	apiKey string
-	http   http.Client
-
-	cache  *cache.Cache
-	mojang *mojang.Client
-	compat *compatlink.Client
-}
-
 func NewClient(c *cache.Cache, apiKey, compatURL string) *Client {
 	return &Client{
 		cache:  c,

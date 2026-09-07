@@ -9,12 +9,6 @@ import (
 	"github.com/valkey-io/valkey-go/valkeyaside"
 )
 
-type Cache struct {
-	client  valkeyaside.CacheAsideClient
-	ttl     time.Duration
-	timeout time.Duration
-}
-
 func NewCache(connectionString string, ttl, timeout time.Duration) (*Cache, error) {
 	if ttl < time.Millisecond {
 		return nil, fmt.Errorf("invalid cache TTL: %v", ttl)

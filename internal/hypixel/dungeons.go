@@ -22,7 +22,7 @@ func (s *Server) GetDungeonsStats(ctx context.Context, req *pb.SkyBlockRequest) 
 	}
 
 	return &pb.DungeonsStatsResponse{
-		Profile:            profileResponse(d.Profile),
+		Profile:            profile(d.Profile),
 		SelectedClassLevel: d.SelectedClassLevel,
 		CatacombsLevel:     d.CatacombsLevel,
 		SelectedClass:      d.SelectedClass,

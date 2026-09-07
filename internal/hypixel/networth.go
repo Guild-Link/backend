@@ -15,6 +15,6 @@ func (s *Server) GetNetworth(ctx context.Context, req *pb.SkyBlockRequest) (*pb.
 	return &pb.NetworthResponse{
 		Total:       nw.Total,
 		Unsoulbound: nw.Unsoulbound,
-		Profile:     profileResponse(nw.Profile),
+		Profile:     profile(nw.Profile),
 	}, nil
 }

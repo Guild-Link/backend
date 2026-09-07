@@ -1,7 +1,14 @@
 package compatlink
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"net/http"
+)
 
+type Client struct {
+	baseURL string
+	http    http.Client
+}
 type networthRequest struct {
 	Museum  json.RawMessage `json:"museum,omitempty"`
 	Profile json.RawMessage `json:"profile"`

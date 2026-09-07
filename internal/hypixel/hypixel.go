@@ -12,16 +12,16 @@ type Server struct {
 	hypixel *hypixel.Client
 }
 
-func Register(s grpc.ServiceRegistrar, c *cache.Cache, apiKey, compatURL string) {
-	pb.RegisterHypixelServer(s, &Server{
-		hypixel: hypixel.NewClient(c, apiKey, compatURL),
-	})
-}
-
-func profileResponse(profile *hypixel.SkyBlockProfile) *pb.SkyBlockProfile {
+func profile(profile *hypixel.SkyBlockProfile) *pb.SkyBlockProfile {
 	return &pb.SkyBlockProfile{
 		Username: profile.Player.Name,
 		Uuid:     profile.Player.ID,
 		Profile:  profile.Name,
 	}
+}
+
+func Register(s grpc.ServiceRegistrar, c *cache.Cache, apiKey, compatURL string) {
+	pb.RegisterHypixelServer(s, &Server{
+		hypixel: hypixel.NewClient(c, apiKey, compatURL),
+	})
 }

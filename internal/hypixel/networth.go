@@ -7,13 +7,14 @@ import (
 )
 
 func (s *Server) GetNetworth(ctx context.Context, req *pb.SkyBlockRequest) (*pb.NetworthResponse, error) {
-	nw, err := s.client.GetNetworth(ctx, req.GetUuid(), req.GetProfileName())
+	nw, err := s.hypixel.GetNetworth(ctx, req.GetUsername(), req.GetProfile())
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.NetworthResponse{
 		Total:       nw.Total,
-		NonCosmetic: nw.NonCosmetic,
+		Unsoulbound: nw.Unsoulbound,
+		Profile:     profileResponse(nw.Profile),
 	}, nil
 }

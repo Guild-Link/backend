@@ -10,7 +10,7 @@ import (
 )
 
 func (c *Client) GetMuseum(ctx context.Context, profileID, memberID string) (*sc.Museum, error) {
-	body, err := c.get(ctx, "/skyblock/museum?profile="+url.QueryEscape(profileID))
+	body, err := c.GetMuseumRaw(ctx, profileID)
 	if err != nil {
 		return nil, err
 	}
@@ -23,10 +23,19 @@ func (c *Client) GetMuseum(ctx context.Context, profileID, memberID string) (*sc
 		return nil, fmt.Errorf("decode Hypixel museum response: %w", err)
 	}
 
-	museum, ok := data.Members[parseUUID(memberID)]
+	museum, ok := data.Members[memberID]
 	if !ok {
 		return nil, nil
 	}
 
 	return &museum, nil
+}
+
+func (c *Client) GetMuseumRaw(ctx context.Context, profileID string) (json.RawMessage, error) {
+	body, err := c.get(ctx, "/skyblock/museum?profile="+url.QueryEscape(profileID))
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
 }

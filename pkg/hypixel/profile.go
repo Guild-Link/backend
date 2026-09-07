@@ -4,43 +4,59 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strings"
 
 	sc "github.com/DuckySoLucky/SkyCrypt-Types"
+	"github.com/guild-link/backend/pkg/mojang"
 )
 
 type SkyBlockProfile struct {
-	ID                string
-	Name              string
-	GameMode          string
-	Active            bool
+	ID       string
+	Name     string
+	GameMode string
+	Selected bool
+	Player   *mojang.Profile
+	Raw      json.RawMessage
+
 	Data              *sc.Member
 	Banking           *sc.Banking
 	CommunityUpgrades *sc.CommunityUpgrades
 }
 
-func (c *Client) GetProfileData(ctx context.Context, uuid string) ([]sc.Profile, error) {
-	body, err := c.getWithUUID(ctx, "/skyblock/profiles", parseUUID(uuid))
+func (c *Client) GetProfilesRaw(ctx context.Context, username string) (*mojang.Profile, []json.RawMessage, error) {
+	profile, err := c.mojang.GetProfile(ctx, username)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+
+	body, err := c.get(ctx, "/skyblock/profiles"+"?uuid="+url.QueryEscape(profile.ID))
+	if err != nil {
+		return nil, nil, err
 	}
 
 	var data struct {
-		Profiles []sc.Profile `json:"profiles"`
+		Profiles []json.RawMessage `json:"profiles"`
 	}
 
 	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, fmt.Errorf("decode Hypixel profiles response: %w", err)
+		return nil, nil, fmt.Errorf("decode Hypixel profiles response: %w", err)
 	}
 
-	return data.Profiles, nil
+	return profile, data.Profiles, nil
 }
 
-func (c *Client) GetSkyBlockProfiles(ctx context.Context, uuid string) ([]SkyBlockProfile, error) {
-	uuid = parseUUID(uuid)
-	data, err := c.GetProfileData(ctx, uuid)
+func (c *Client) GetSkyBlockProfiles(ctx context.Context, username string) ([]SkyBlockProfile, error) {
+	player, rawProfiles, err := c.GetProfilesRaw(ctx, username)
 	if err != nil {
 		return nil, err
+	}
+
+	data := make([]sc.Profile, len(rawProfiles))
+	for i := range rawProfiles {
+		if err := json.Unmarshal(rawProfiles[i], &data[i]); err != nil {
+			return nil, fmt.Errorf("decode Hypixel profile: %w", err)
+		}
 	}
 
 	profiles := make([]SkyBlockProfile, 0, len(data))
@@ -48,7 +64,7 @@ func (c *Client) GetSkyBlockProfiles(ctx context.Context, uuid string) ([]SkyBlo
 		var memberData *sc.Member
 		p := &data[i]
 
-		member, ok := p.Members[uuid]
+		member, ok := p.Members[player.ID]
 		if ok {
 			memberData = &member
 		}
@@ -56,8 +72,10 @@ func (c *Client) GetSkyBlockProfiles(ctx context.Context, uuid string) ([]SkyBlo
 		profiles = append(profiles, SkyBlockProfile{
 			ID:                p.ProfileID,
 			Name:              p.CuteName,
+			Player:            player,
+			Raw:               rawProfiles[i],
 			GameMode:          p.GameMode,
-			Active:            p.Selected,
+			Selected:          p.Selected,
 			Data:              memberData,
 			Banking:           p.Banking,
 			CommunityUpgrades: p.CommunityUpgrades,
@@ -67,20 +85,20 @@ func (c *Client) GetSkyBlockProfiles(ctx context.Context, uuid string) ([]SkyBlo
 	return profiles, nil
 }
 
-func (c *Client) GetSkyBlockProfile(ctx context.Context, uuid, profileName string) (*SkyBlockProfile, error) {
-	profiles, err := c.GetSkyBlockProfiles(ctx, parseUUID(uuid))
+func (c *Client) GetSkyBlockProfile(ctx context.Context, username, profileName string) (*SkyBlockProfile, error) {
+	profiles, err := c.GetSkyBlockProfiles(ctx, username)
 	if err != nil {
 		return nil, err
 	}
 
 	if profileName == "" {
 		for _, profile := range profiles {
-			if !profile.Active {
+			if !profile.Selected {
 				continue
 			}
 
 			if profile.Data == nil {
-				return nil, fmt.Errorf("member %s not found in selected profile", uuid)
+				return nil, fmt.Errorf("member %s not found in selected profile", profile.Player.ID)
 			}
 
 			return &profile, nil
@@ -92,7 +110,7 @@ func (c *Client) GetSkyBlockProfile(ctx context.Context, uuid, profileName strin
 	for _, profile := range profiles {
 		if strings.EqualFold(profile.Name, profileName) {
 			if profile.Data == nil {
-				return nil, fmt.Errorf("member %s not found in profile %s", uuid, profileName)
+				return nil, fmt.Errorf("member %s not found in profile %s", profile.Player.ID, profileName)
 			}
 			return &profile, nil
 		}

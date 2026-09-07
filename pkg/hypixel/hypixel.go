@@ -9,19 +9,26 @@ import (
 	"time"
 
 	"github.com/guild-link/backend/pkg/cache"
+	"github.com/guild-link/backend/pkg/compatlink"
+	"github.com/guild-link/backend/pkg/mojang"
 )
 
 type Client struct {
-	cache  *cache.Cache
-	http   http.Client
 	apiKey string
+	http   http.Client
+
+	cache  *cache.Cache
+	mojang *mojang.Client
+	compat *compatlink.Client
 }
 
-func NewClient(apiKey string, cache *cache.Cache) *Client {
+func NewClient(c *cache.Cache, apiKey, compatURL string) *Client {
 	return &Client{
-		cache:  cache,
+		cache:  c,
 		apiKey: apiKey,
 		http:   http.Client{Timeout: 15 * time.Second},
+		mojang: mojang.NewClient(c),
+		compat: compatlink.NewClient(compatURL),
 	}
 }
 

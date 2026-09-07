@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/guild-link/backend/pkg/cache"
@@ -55,5 +56,6 @@ func (c *Client) GetProfile(ctx context.Context, username string) (*Profile, err
 		return nil, err
 	}
 
+	profile.ID = strings.ToLower(strings.ReplaceAll(profile.ID, "-", ""))
 	return &profile, nil
 }

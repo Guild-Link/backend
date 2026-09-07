@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -11,37 +10,28 @@ import (
 	"time"
 
 	"github.com/guild-link/backend/internal/hypixel"
-	"github.com/guild-link/backend/internal/mojang"
 	"github.com/guild-link/backend/pkg/cache"
+	"github.com/guild-link/backend/pkg/common"
 	"google.golang.org/grpc"
 )
 
-func run(ctx context.Context) error {
-	apiKey := os.Getenv("API_KEY")
-	if apiKey == "" {
-		return fmt.Errorf("API_KEY is not set")
+func newCache(url string) (*cache.Cache, error) {
+	if url == "" {
+		return nil, nil
 	}
 
-	valkeyURL := os.Getenv("VALKEY_URL")
-	var valkeyCache *cache.Cache
-	if valkeyURL != "" {
-		var err error
-		valkeyCache, err = cache.NewCache(valkeyURL, 15*time.Minute, 30*time.Second)
-		if err != nil {
-			return fmt.Errorf("create valkey cache: %w", err)
-		}
-		defer valkeyCache.Close()
-	}
+	return cache.NewCache(url, 15*time.Minute, 30*time.Second)
+}
 
-	listener, err := net.Listen("tcp", ":50051")
+func serve(ctx context.Context, reg func(s *grpc.Server)) error {
+	listener, err := net.Listen("tcp", common.DefaultEnv("LISTEN_ADDR", ":50051"))
 	if err != nil {
 		return err
 	}
 	defer listener.Close()
 
 	grpcServer := grpc.NewServer()
-	hypixel.Register(grpcServer, apiKey, valkeyCache)
-	mojang.Register(grpcServer, valkeyCache)
+	reg(grpcServer)
 
 	go func() {
 		<-ctx.Done()
@@ -55,7 +45,19 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	if err := run(ctx); err != nil {
+	compatURL := common.MustEnv("COMPATLINK_URL")
+	apiKey := common.MustEnv("API_KEY")
+
+	c, err := newCache(os.Getenv("VALKEY_URL"))
+	if err != nil {
+		log.Fatalf("failed to initialize cache: %v", err)
+	}
+
+	reg := func(s *grpc.Server) {
+		hypixel.Register(s, c, apiKey, compatURL)
+	}
+
+	if err := serve(ctx, reg); err != nil {
 		log.Fatal(err)
 	}
 }

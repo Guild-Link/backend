@@ -6,13 +6,20 @@ service Hypixel {
 }
 
 message SkyBlockRequest {
-  string uuid = 1;
-  string profileName = 2;
+  string username = 1;
+  string profile = 2;
+}
+
+message SkyBlockProfile {
+  string username = 1;
+  string uuid = 2;
+  string profile = 3;
 }
 
 message NetworthResponse {
   double total = 1;
-  double nonCosmetic = 2;
+  double unsoulbound = 2;
+  SkyBlockProfile profile = 3;
 }
 
 message DungeonClasses {
@@ -50,4 +57,5 @@ message DungeonsStatsResponse {
   DungeonFloorStats m4 = 19;
   DungeonFloorStats m5 = 20;
   DungeonFloorStats m6 = 21;
+  SkyBlockProfile profile = 22;
 }

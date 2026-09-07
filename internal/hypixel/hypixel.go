@@ -9,9 +9,19 @@ import (
 
 type Server struct {
 	pb.UnimplementedHypixelServer
-	client *hypixel.Client
+	hypixel *hypixel.Client
 }
 
-func Register(s grpc.ServiceRegistrar, apiKey string, cache *cache.Cache) {
-	pb.RegisterHypixelServer(s, &Server{client: hypixel.NewClient(apiKey, cache)})
+func Register(s grpc.ServiceRegistrar, c *cache.Cache, apiKey, compatURL string) {
+	pb.RegisterHypixelServer(s, &Server{
+		hypixel: hypixel.NewClient(c, apiKey, compatURL),
+	})
+}
+
+func profileResponse(profile *hypixel.SkyBlockProfile) *pb.SkyBlockProfile {
+	return &pb.SkyBlockProfile{
+		Username: profile.Player.Name,
+		Uuid:     profile.Player.ID,
+		Profile:  profile.Name,
+	}
 }

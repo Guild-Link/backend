@@ -22,13 +22,14 @@ type DungeonFloorStats struct {
 }
 
 type DungeonsStats struct {
+	Profile            *SkyBlockProfile
 	ClassAverage       float64
 	CatacombsLevel     float64
 	SelectedClass      string
 	SelectedClassLevel float64
 	SecretsFound       float64
 	ClassLevel         DungeonClasses
-	Entrance           DungeonFloorStats
+	F0                 DungeonFloorStats
 	F1                 DungeonFloorStats
 	F2                 DungeonFloorStats
 	F3                 DungeonFloorStats

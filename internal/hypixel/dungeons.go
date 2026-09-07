@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Server) GetDungeonsStats(ctx context.Context, req *pb.SkyBlockRequest) (*pb.DungeonsStatsResponse, error) {
-	d, err := s.client.GetDungeonsStats(ctx, req.GetUuid(), req.GetProfileName())
+	d, err := s.hypixel.GetDungeonsStats(ctx, req.GetUsername(), req.GetProfile())
 	if err != nil {
 		return nil, err
 	}
@@ -22,10 +22,11 @@ func (s *Server) GetDungeonsStats(ctx context.Context, req *pb.SkyBlockRequest) 
 	}
 
 	return &pb.DungeonsStatsResponse{
-		ClassAverage:       d.ClassAverage,
+		Profile:            profileResponse(d.Profile),
+		SelectedClassLevel: d.SelectedClassLevel,
 		CatacombsLevel:     d.CatacombsLevel,
 		SelectedClass:      d.SelectedClass,
-		SelectedClassLevel: d.SelectedClassLevel,
+		ClassAverage:       d.ClassAverage,
 		SecretsFound:       d.SecretsFound,
 		ClassLevel: &pb.DungeonClasses{
 			Healer:  classLvl.Healer,
@@ -34,7 +35,7 @@ func (s *Server) GetDungeonsStats(ctx context.Context, req *pb.SkyBlockRequest) 
 			Berserk: classLvl.Berserk,
 			Archer:  classLvl.Archer,
 		},
-		Entrance: floor(d.Entrance),
+		Entrance: floor(d.F0),
 		F1:       floor(d.F1),
 		F2:       floor(d.F2),
 		F3:       floor(d.F3),

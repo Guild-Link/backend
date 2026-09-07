@@ -2,40 +2,33 @@ package hypixel
 
 import (
 	"context"
-	"fmt"
-
-	nw "github.com/SkyCryptWebsite/SkyHelper-Networth-Go"
 )
 
 type Networth struct {
 	Total       float64
-	NonCosmetic float64
+	Unsoulbound float64
+	Profile     *SkyBlockProfile
 }
 
-func (c *Client) GetNetworth(ctx context.Context, uuid, profileName string) (*Networth, error) {
-	profile, err := c.GetSkyBlockProfile(ctx, uuid, profileName)
+func (c *Client) GetNetworth(ctx context.Context, username, profileName string) (*Networth, error) {
+	profile, err := c.GetSkyBlockProfile(ctx, username, profileName)
 	if err != nil {
 		return nil, err
 	}
 
-	museumData, err := c.GetMuseum(ctx, profile.ID, uuid)
+	museum, err := c.GetMuseumRaw(ctx, profile.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	var balance float64
-	if profile.Banking != nil && profile.Banking.Balance != nil {
-		balance = *profile.Banking.Balance
-	}
-
-	calculator, err := nw.NewProfileNetworthCalculator(profile.Data, museumData, balance)
+	result, err := c.compat.Networth(ctx, profile.Raw, museum, profile.Player.ID)
 	if err != nil {
-		return nil, fmt.Errorf("create networth calculator: %w", err)
+		return nil, err
 	}
 
-	opts := nw.NetworthOptions{OnlyNetworth: true}
 	return &Networth{
-		NonCosmetic: calculator.GetNonCosmeticNetworth(opts).Networth,
-		Total:       calculator.GetNetworth(opts).Networth,
+		Total:       result.Networth,
+		Unsoulbound: result.UnsoulboundNetworth,
+		Profile:     profile,
 	}, nil
 }

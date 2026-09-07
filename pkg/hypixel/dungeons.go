@@ -8,8 +8,8 @@ import (
 	"github.com/guild-link/backend/pkg/math"
 )
 
-func (c *Client) GetDungeonsStats(ctx context.Context, uuid, profileName string) (*DungeonsStats, error) {
-	profile, err := c.GetSkyBlockProfile(ctx, uuid, profileName)
+func (c *Client) GetDungeonsStats(ctx context.Context, username, profileName string) (*DungeonsStats, error) {
+	profile, err := c.GetSkyBlockProfile(ctx, username, profileName)
 	if err != nil {
 		return nil, err
 	}
@@ -20,6 +20,7 @@ func (c *Client) GetDungeonsStats(ctx context.Context, uuid, profileName string)
 
 	dung := profile.Data.Dungeons
 	cl := dung.Classes
+
 	classLevels := map[string]float64{
 		"berserk": calcCata(cl["berserk"].Experience),
 		"archer":  calcCata(cl["archer"].Experience),
@@ -48,6 +49,7 @@ func (c *Client) GetDungeonsStats(ctx context.Context, uuid, profileName string)
 	}
 
 	return &DungeonsStats{
+		Profile:            profile,
 		SelectedClass:      strings.ToUpper(selectedClass[:1]) + selectedClass[1:],
 		CatacombsLevel:     calcCata(dung.DungeonTypes["catacombs"].Experience),
 		ClassAverage:       math.RoundToTwo(classTotal / 5),
@@ -60,20 +62,20 @@ func (c *Client) GetDungeonsStats(ctx context.Context, uuid, profileName string)
 			Mage:    classLevels["mage"],
 			Tank:    classLevels["tank"],
 		},
-		Entrance: floorStats("catacombs", 0),
-		F1:       floorStats("catacombs", 1),
-		F2:       floorStats("catacombs", 2),
-		F3:       floorStats("catacombs", 3),
-		F4:       floorStats("catacombs", 4),
-		F5:       floorStats("catacombs", 5),
-		F6:       floorStats("catacombs", 6),
-		F7:       floorStats("catacombs", 7),
-		M1:       floorStats("master_catacombs", 1),
-		M2:       floorStats("master_catacombs", 2),
-		M3:       floorStats("master_catacombs", 3),
-		M4:       floorStats("master_catacombs", 4),
-		M5:       floorStats("master_catacombs", 5),
-		M6:       floorStats("master_catacombs", 6),
-		M7:       floorStats("master_catacombs", 7),
+		F0: floorStats("catacombs", 0),
+		F1: floorStats("catacombs", 1),
+		F2: floorStats("catacombs", 2),
+		F3: floorStats("catacombs", 3),
+		F4: floorStats("catacombs", 4),
+		F5: floorStats("catacombs", 5),
+		F6: floorStats("catacombs", 6),
+		F7: floorStats("catacombs", 7),
+		M1: floorStats("master_catacombs", 1),
+		M2: floorStats("master_catacombs", 2),
+		M3: floorStats("master_catacombs", 3),
+		M4: floorStats("master_catacombs", 4),
+		M5: floorStats("master_catacombs", 5),
+		M6: floorStats("master_catacombs", 6),
+		M7: floorStats("master_catacombs", 7),
 	}, nil
 }
